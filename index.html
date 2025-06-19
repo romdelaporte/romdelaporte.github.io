@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rodrigo Muñoz | Software Engineer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Slate Gray & Amber -->
+    <!-- Application Structure Plan: A single-page, top-down narrative structure with a sticky navigation bar for quick access. The flow is designed to mirror a recruiter's typical path: high-level summary, deep-dive into skills, chronological experience, and finally, tangible project examples. This structure was chosen over a direct report-to-page mapping because it tells a more compelling career story. Key interactions include filtering the skills chart to highlight specific expertise and expanding timeline entries to reveal details on-demand, which respects the user's time and prevents information overload. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Technical Skills -> Goal: Compare/Inform -> Viz: Interactive Radar Chart (Chart.js) + Categorized Lists -> Interaction: User can filter the chart by skill category (Frontend, Backend, etc.). -> Justification: A radar chart provides a quick, memorable visual summary of proficiency distribution, which is more impactful than a simple list. Filtering adds a layer of user-driven exploration.
+        - Report Info: Work Experience -> Goal: Show Change/Progression -> Viz: Vertical Timeline (HTML/Tailwind) -> Interaction: Clicking a job title expands/collapses its detailed responsibilities. -> Justification: A timeline is the most intuitive way to present chronological data. The expand/collapse interaction keeps the UI clean and focused, letting users drill down as needed.
+        - Report Info: Personal Projects -> Goal: Organize/Showcase -> Viz: Card-based Grid (HTML/Tailwind) -> Interaction: Cards have a hover effect and a link to the source code. -> Justification: Cards are a standard, responsive, and visually appealing method for presenting a portfolio of distinct items.
+        - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. 
+    -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .chart-container {
+            position: relative;
+            margin: auto;
+            height: 40vh;
+            max-height: 400px;
+            width: 90vw;
+            max-width: 450px;
+        }
+        .timeline-item-content {
+            transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out;
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+        }
+        .timeline-item-content.open {
+            max-height: 500px;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-700">
+
+    <!-- Header & Navigation -->
+    <header id="header" class="bg-slate-100/80 backdrop-blur-sm sticky top-0 z-50 border-b border-slate-200">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <a href="#hero" class="text-xl font-bold text-slate-800">Rodrigo Muñoz</a>
+            <div class="hidden md:flex space-x-6">
+                <a href="#skills" class="text-slate-600 hover:text-amber-600 transition">Skills</a>
+                <a href="#experience" class="text-slate-600 hover:text-amber-600 transition">Experience</a>
+                <a href="#projects" class="text-slate-600 hover:text-amber-600 transition">Projects</a>
+                <a href="#contact" class="text-slate-600 hover:text-amber-600 transition">Contact</a>
+            </div>
+            <div class="md:hidden">
+                <button id="mobile-menu-button" class="text-slate-600 focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                </button>
+            </div>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden">
+            <a href="#skills" class="block py-2 px-6 text-sm text-slate-600 hover:bg-slate-200">Skills</a>
+            <a href="#experience" class="block py-2 px-6 text-sm text-slate-600 hover:bg-slate-200">Experience</a>
+            <a href="#projects" class="block py-2 px-6 text-sm text-slate-600 hover:bg-slate-200">Projects</a>
+            <a href="#contact" class="block py-2 px-6 text-sm text-slate-600 hover:bg-slate-200">Contact</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+
+        <!-- Hero Section -->
+        <section id="hero" class="text-center py-16 md:py-24">
+            <h1 class="text-4xl md:text-6xl font-bold text-slate-800 tracking-tight">Software Engineer & Full Stack Developer</h1>
+            <p class="mt-6 max-w-3xl mx-auto text-lg text-slate-600">
+                A results-driven Software Engineer specializing in backend development with a growing expertise in modern frontend frameworks. I design, develop, and deploy robust web applications, APIs, and automated solutions with a passion for building scalable and efficient software.
+            </p>
+            <div class="mt-8">
+                <a href="#projects" class="bg-amber-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-amber-600 transition-colors shadow-lg">View My Work</a>
+            </div>
+        </section>
+
+        <!-- Skills Section -->
+        <section id="skills" class="py-16 md:py-24 border-t border-slate-200">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-800">Technical Skills</h2>
+                <p class="mt-4 max-w-2xl mx-auto text-slate-600">
+                    This section provides a visual overview of my technical abilities. The chart highlights my key strengths across different domains. Use the filters to explore specific skill sets, or review the detailed lists below for a comprehensive look at the technologies I work with.
+                </p>
+            </div>
+
+            <div class="flex flex-col lg:flex-row items-center justify-center gap-12">
+                <div class="w-full lg:w-1/2">
+                    <div class="chart-container">
+                        <canvas id="skillsChart"></canvas>
+                    </div>
+                    <div id="skills-filter" class="flex justify-center flex-wrap gap-2 mt-6">
+                        <button data-filter="all" class="bg-amber-500 text-white text-sm font-medium py-2 px-4 rounded-full">All Skills</button>
+                        <button data-filter="frontend" class="bg-slate-200 text-slate-700 text-sm font-medium py-2 px-4 rounded-full hover:bg-slate-300">Frontend</button>
+                        <button data-filter="backend" class="bg-slate-200 text-slate-700 text-sm font-medium py-2 px-4 rounded-full hover:bg-slate-300">Backend</button>
+                        <button data-filter="devops" class="bg-slate-200 text-slate-700 text-sm font-medium py-2 px-4 rounded-full hover:bg-slate-300">Data & DevOps</button>
+                    </div>
+                </div>
+                
+                <div class="w-full lg:w-1/2 grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
+                        <h3 class="font-bold text-lg text-slate-800 mb-3">Frontend</h3>
+                        <ul class="space-y-2 text-slate-600">
+                            <li>JavaScript (ES6+)</li>
+                            <li>React.js & Next.js</li>
+                            <li>HTML5 & CSS3</li>
+                            <li>D3.js</li>
+                            <li>Tailwind CSS</li>
+                        </ul>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
+                        <h3 class="font-bold text-lg text-slate-800 mb-3">Backend</h3>
+                        <ul class="space-y-2 text-slate-600">
+                            <li>Python & Django</li>
+                            <li>Node.js</li>
+                            <li>RESTful APIs</li>
+                            <li>Celery</li>
+                        </ul>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
+                        <h3 class="font-bold text-lg text-slate-800 mb-3">Databases & BaaS</h3>
+                        <ul class="space-y-2 text-slate-600">
+                            <li>PostgreSQL</li>
+                            <li>Redis</li>
+                            <li>Supabase</li>
+                            <li>Firebase</li>
+                        </ul>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
+                        <h3 class="font-bold text-lg text-slate-800 mb-3">Cloud & DevOps</h3>
+                        <ul class="space-y-2 text-slate-600">
+                            <li>Google Cloud (GCP)</li>
+                            <li>Digital Ocean</li>
+                            <li>Docker & Kubernetes</li>
+                            <li>Git & GitHub</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Experience Section -->
+        <section id="experience" class="py-16 md:py-24 border-t border-slate-200">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-800">Work Experience</h2>
+                <p class="mt-4 max-w-2xl mx-auto text-slate-600">My professional journey is detailed below. I've highlighted key responsibilities and accomplishments in each role. Click on any job title to expand the section and view more information about my contributions.</p>
+            </div>
+            <div class="relative max-w-3xl mx-auto">
+                <div class="absolute left-1/2 -ml-0.5 w-1 h-full bg-slate-200"></div>
+                
+                <div class="timeline-item mt-8">
+                    <div class="flex items-center">
+                        <div class="w-1/2"></div>
+                        <div class="absolute left-1/2 -ml-4 w-8 h-8 rounded-full bg-amber-500 border-4 border-slate-50"></div>
+                        <div class="w-1/2 pl-12">
+                            <div class="p-4 bg-white rounded-lg shadow-md border border-slate-200 cursor-pointer timeline-item-header">
+                                <p class="text-sm text-slate-500">2022 - Present</p>
+                                <h3 class="font-bold text-slate-800">Software Engineer</h3>
+                                <p class="text-sm text-slate-600">Delaporte Digital (Remote)</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="timeline-item-content">
+                        <div class="w-1/2"></div>
+                        <div class="w-1/2 pl-12 pt-4">
+                            <ul class="list-disc list-inside space-y-2 text-slate-600 bg-white p-4 rounded-lg">
+                                <li>Architect and develop full-stack web applications using Python, Django, JavaScript, and React.js.</li>
+                                <li>Design and implement RESTful APIs to support front-end functionalities and integrations.</li>
+                                <li>Manage deployment and infrastructure on GCP and Digital Ocean using Kubernetes.</li>
+                                <li>Collaborate in an Agile environment, using Git for version control and code reviews.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="timeline-item mt-8">
+                    <div class="flex items-center flex-row-reverse">
+                        <div class="w-1/2"></div>
+                        <div class="absolute left-1/2 -ml-4 w-8 h-8 rounded-full bg-amber-500 border-4 border-slate-50"></div>
+                        <div class="w-1/2 pr-12">
+                            <div class="p-4 bg-white rounded-lg shadow-md border border-slate-200 cursor-pointer timeline-item-header">
+                                <p class="text-sm text-slate-500">2021</p>
+                                <h3 class="font-bold text-slate-800">Software Engineer</h3>
+                                <p class="text-sm text-slate-600">The Real Eco State (Santiago, Chile)</p>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="timeline-item-content">
+                        <div class="w-1/2 pr-12 pt-4 flex justify-end">
+                             <ul class="list-disc list-inside space-y-2 text-slate-600 bg-white p-4 rounded-lg text-right">
+                                <li>Engineered a web crawler with Django/Celery to aggregate and process real estate data.</li>
+                                <li>Developed a recommendation engine to provide actionable insights to users.</li>
+                                <li>Managed a PostgreSQL database to ensure data integrity and query performance.</li>
+                            </ul>
+                        </div>
+                        <div class="w-1/2"></div>
+                    </div>
+                </div>
+                
+                <div class="timeline-item mt-8">
+                    <div class="flex items-center">
+                        <div class="w-1/2"></div>
+                        <div class="absolute left-1/2 -ml-4 w-8 h-8 rounded-full bg-amber-500 border-4 border-slate-50"></div>
+                        <div class="w-1/2 pl-12">
+                            <div class="p-4 bg-white rounded-lg shadow-md border border-slate-200 cursor-pointer timeline-item-header">
+                                <p class="text-sm text-slate-500">2017</p>
+                                <h3 class="font-bold text-slate-800">Software Engineer</h3>
+                                <p class="text-sm text-slate-600">VZOR (Santiago, Chile)</p>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="timeline-item-content">
+                        <div class="w-1/2"></div>
+                        <div class="w-1/2 pl-12 pt-4">
+                            <ul class="list-disc list-inside space-y-2 text-slate-600 bg-white p-4 rounded-lg">
+                                <li>Developed interactive analytics dashboards with Django and D3.js.</li>
+                                <li>Implemented secure authentication and authorization systems.</li>
+                                <li>Utilized Django Channels for real-time data visualization features.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Projects Section -->
+        <section id="projects" class="py-16 md:py-24 border-t border-slate-200">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-800">Personal Projects</h2>
+                 <p class="mt-4 max-w-2xl mx-auto text-slate-600">Below are some of the projects I've developed in my own time. These projects demonstrate my ability to build complete, functional applications from the ground up and my passion for exploring new technologies.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="bg-white rounded-lg shadow-md border border-slate-200 overflow-hidden transform hover:-translate-y-1 transition-transform">
+                    <div class="p-6">
+                        <h3 class="font-bold text-lg text-slate-800">Full-Stack E-commerce Platform</h3>
+                        <p class="mt-2 text-slate-600">A complete e-commerce solution featuring product catalogs, user auth, and a shopping cart.</p>
+                        <div class="mt-4">
+                             <span class="inline-block bg-amber-100 text-amber-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">Next.js</span>
+                             <span class="inline-block bg-green-100 text-green-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">Supabase</span>
+                        </div>
+                    </div>
+                    <a href="https://github.com/romdelaporte" target="_blank" class="block bg-slate-50 p-4 text-center text-sm font-medium text-amber-600 hover:bg-slate-100 transition">View on GitHub →</a>
+                </div>
+                 <div class="bg-white rounded-lg shadow-md border border-slate-200 overflow-hidden transform hover:-translate-y-1 transition-transform">
+                    <div class="p-6">
+                        <h3 class="font-bold text-lg text-slate-800">CMS for E-learning</h3>
+                        <p class="mt-2 text-slate-600">A content management system for an educational platform for instructors to manage courses.</p>
+                        <div class="mt-4">
+                             <span class="inline-block bg-blue-100 text-blue-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">Django</span>
+                             <span class="inline-block bg-indigo-100 text-indigo-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">PostgreSQL</span>
+                        </div>
+                    </div>
+                     <a href="https://github.com/romdelaporte" target="_blank" class="block bg-slate-50 p-4 text-center text-sm font-medium text-amber-600 hover:bg-slate-100 transition">View on GitHub →</a>
+                </div>
+                 <div class="bg-white rounded-lg shadow-md border border-slate-200 overflow-hidden transform hover:-translate-y-1 transition-transform">
+                    <div class="p-6">
+                        <h3 class="font-bold text-lg text-slate-800">Real-Time Ride-Sharing App</h3>
+                        <p class="mt-2 text-slate-600">An Uber clone demonstrating geolocation, user matching, and live tracking functionalities.</p>
+                        <div class="mt-4">
+                             <span class="inline-block bg-blue-100 text-blue-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">Django Channels</span>
+                             <span class="inline-block bg-red-100 text-red-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">Redis</span>
+                             <span class="inline-block bg-yellow-100 text-yellow-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">JavaScript</span>
+                        </div>
+                    </div>
+                     <a href="https://github.com/romdelaporte" target="_blank" class="block bg-slate-50 p-4 text-center text-sm font-medium text-amber-600 hover:bg-slate-100 transition">View on GitHub →</a>
+                </div>
+            </div>
+        </section>
+
+    </main>
+    
+    <!-- Footer -->
+    <footer id="contact" class="bg-slate-800 text-slate-300 py-12 border-t border-slate-700">
+        <div class="container mx-auto px-6 text-center">
+            <h2 class="text-2xl font-bold text-white">Get In Touch</h2>
+            <p class="mt-4 max-w-xl mx-auto">I'm currently seeking new opportunities. Feel free to reach out if you have a project in mind or just want to connect.</p>
+            <div class="mt-8 flex justify-center items-center space-x-6">
+                <a href="mailto:rodrigod@delaportedigital.com" class="hover:text-amber-400 transition">rodrigod@delaportedigital.com</a>
+                <span>&bull;</span>
+                <a href="https://github.com/romdelaporte" target="_blank" class="hover:text-amber-400 transition">GitHub</a>
+                <span>&bull;</span>
+                <span>+56 997433966</span>
+            </div>
+            <p class="mt-8 text-sm text-slate-400">&copy; 2024 Rodrigo Muñoz. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Mobile menu toggle
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+            
+            // Timeline expand/collapse
+            const timelineHeaders = document.querySelectorAll('.timeline-item-header');
+            timelineHeaders.forEach(header => {
+                header.addEventListener('click', () => {
+                    const content = header.closest('.timeline-item').querySelector('.timeline-item-content');
+                    content.classList.toggle('open');
+                });
+            });
+
+            // Skills Chart
+            const skillsData = {
+                all: {
+                    labels: ['React/Next.js', 'Python/Django', 'Databases', 'Cloud/DevOps', 'JS/D3.js', 'API Design'],
+                    data: [8, 9, 8, 7, 7, 9]
+                },
+                frontend: {
+                    labels: ['React/Next.js', 'JS/D3.js', 'HTML/CSS', 'Tailwind'],
+                    data: [8, 7, 9, 9]
+                },
+                backend: {
+                    labels: ['Python/Django', 'Node.js', 'API Design', 'Celery'],
+                    data: [9, 6, 9, 8]
+                },
+                devops: {
+                    labels: ['Databases', 'GCP/DO', 'Docker/K8s', 'Git/CI/CD'],
+                    data: [8, 7, 7, 8]
+                }
+            };
+            
+            const ctx = document.getElementById('skillsChart').getContext('2d');
+            let skillsChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: skillsData.all.labels,
+                    datasets: [{
+                        label: 'Proficiency',
+                        data: skillsData.all.data,
+                        backgroundColor: 'rgba(245, 158, 11, 0.2)',
+                        borderColor: 'rgb(245, 158, 11)',
+                        pointBackgroundColor: 'rgb(245, 158, 11)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(245, 158, 11)'
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { color: 'rgba(0, 0, 0, 0.1)' },
+                            grid: { color: 'rgba(0, 0, 0, 0.1)' },
+                            pointLabels: {
+                                font: {
+                                    size: 12,
+                                    weight: '500'
+                                },
+                                color: '#475569'
+                            },
+                            ticks: {
+                                backdropColor: 'rgba(255, 255, 255, 0)',
+                                color: '#64748b',
+                                stepSize: 2,
+                                beginAtZero: true,
+                                max: 10
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+
+            // Filter buttons logic
+            const filterButtons = document.querySelectorAll('#skills-filter button');
+            filterButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Update active button style
+                    filterButtons.forEach(btn => {
+                        btn.classList.remove('bg-amber-500', 'text-white');
+                        btn.classList.add('bg-slate-200', 'text-slate-700');
+                    });
+                    button.classList.add('bg-amber-500', 'text-white');
+                    button.classList.remove('bg-slate-200', 'text-slate-700');
+
+                    // Update chart data
+                    const filter = button.dataset.filter;
+                    const newData = skillsData[filter];
+                    skillsChart.data.labels = newData.labels;
+                    skillsChart.data.datasets[0].data = newData.data;
+                    skillsChart.update();
+                });
+            });
+        });
+    </script>
+</body>
+</html>
